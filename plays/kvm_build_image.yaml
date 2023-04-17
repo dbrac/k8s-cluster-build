@@ -1,0 +1,40 @@
+# ansible-playbook -i inv/hosts.yaml plays/kvm_build_image.yaml
+# it doesn't setup netplan, I already did that manually.
+- name: "Build Image"
+  hosts: kvmhost
+  become: yes
+  gather_facts: yes
+  remote_user: darrin
+  vars:
+    iso_url: "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
+    iso_checksum: "file:https://cloud-images.ubuntu.com/releases/focal/release/SHA256SUMS"
+    ubuntu_version: "20.04"
+    image_filename: "ubuntu-{{ ubuntu_version }}-{{ ansible_date_time.date }}.qcow2"
+    image_filepath: "/opt/vmbuild/packer/output-ubuntu_image"
+  tasks:
+    - name: "Create build directory"
+      file:
+        path: "/opt/vmbuild"
+        state: directory
+        owner: root
+        group: root
+        mode: '0750'
+
+    - name: "Copy packer files"
+      copy:
+        src: "../packer"
+        dest: "/opt/vmbuild"
+
+    - name: "Packer build log file"
+      debug:
+        msg: "log file located at /tmp/packer-vmbuild.log"
+      delegate_to: localhost
+
+    - name: "Build VM image"
+      shell: PACKER_LOG=1 /usr/bin/packer build -var iso_url="{{ iso_url }}" -var iso_checksum={{ iso_checksum }} ubuntu_{{ ubuntu_version }}.pkr.hcl
+      args:
+        chdir: "/opt/vmbuild/packer"
+        creates: "{{ image_filepath }}"
+
+    - name: "Rename and move image"
+      shell: mv {{ image_filepath }}/packer-ubuntu_image /var/lib/libvirt/images/base/{{ image_filename }}

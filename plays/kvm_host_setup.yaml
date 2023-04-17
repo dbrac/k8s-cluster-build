@@ -1,0 +1,52 @@
+# ansible-playbook -i inv/hosts.yaml plays/kvm_host_setup.yaml
+# it doesn't setup netplan, I already did that manually.
+- name: "Setup KVM host"
+  hosts: kvmhost
+  become: yes
+  gather_facts: no
+  remote_user: darrin
+  vars:
+    packages: ['qemu-kvm', 'libvirt-clients', 'libvirt-daemon-system', 'bridge-utils', 'virtinst', 'cloud-utils']
+  tasks:
+    - name: "Install cpu-checker if its not already installed"
+      apt:
+        name: "cpu-checker"
+        state: present
+        install_recommends: no
+
+    - name: "Check if CPU virtualization extensions are enabled"
+      shell: "kvm-ok | tail -n 1"
+      register: kvmok
+
+    - debug:
+        msg: "{{ kvmok.stdout }}"
+
+    - name: "Fail if CPU virtualization extensions are not enabled"
+      fail:
+        msg: Failed CPU virtualization extensions are not enabled
+      when: (kvmok.stdout != "KVM acceleration can be used")
+
+    - name: "Install packages"
+      apt:
+        name: "{{ packages }}"
+        state: present
+        install_recommends: no
+
+    - name: "Create directories"
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: libvirt-qemu
+        mode: '0750'
+      with_items:
+        - /var/lib/libvirt/images/ # this one was already present but we'll leave it here as an example of "with_items"
+        - /var/lib/libvirt/images/base
+
+    - name: "Install Packer"
+      shell: curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - \
+             && apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" \
+             && apt-get update \
+             && apt-get install packer
+
+
