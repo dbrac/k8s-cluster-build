@@ -1,0 +1,55 @@
+###############################
+## Master init configuration ##
+###############################
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+######################################################
+## Uses Kubernetes version from inv/group_vars/all.yml
+######################################################
+kubernetesVersion: {{ kubernetes_version }}
+#############################################
+## Uses apiserver from inv/group_vars/all.yml
+#############################################
+controlPlaneEndpoint: {{ apiserver }}:6443
+
+apiServer:
+  timeoutForControlPlane: 3m0s
+  extraArgs:
+    audit-log-maxage: "31"
+    audit-log-maxbackup: "7"
+    audit-log-maxsize: "101"
+    enable-admission-plugins: AlwaysPullImages
+    ######################################################################################
+    ## NOTE: NodePort default range is (30000-32767) so this does not work for port 80.
+    ## When the ingress-nginx-controller service is defined it uses a port in the default
+    ## range (30000-32767). To make this work on port 80, must change the default NodePort
+    ## range in Kubernetes apiserver.
+    ######################################################################################
+    service-node-port-range: "80-32767"
+
+controllerManager:
+  extraArgs:
+    # NOTE: 'address' removed for v1.24
+    # address: 0.0.0.0
+    bind-address: 0.0.0.0
+    profiling: "false"
+
+networking:
+############################################
+## Uses pod_cidr from inv/group_vars/all.yml
+############################################
+  podSubnet: {{ pod_cidr }}
+
+scheduler:
+  extraArgs:
+    # NOTE: 'address' removed for v1.24
+    # address: 0.0.0.0
+    bind-address: 0.0.0.0
+    profiling: "false"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+maxPods: 100

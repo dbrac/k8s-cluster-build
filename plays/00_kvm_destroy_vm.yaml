@@ -1,0 +1,22 @@
+# ansible-playbook -i inv/hosts.yaml plays/00_kvm_destroy_vm.yaml
+- name: "Build VM's"
+  hosts: kvmhost
+  become: yes
+  gather_facts: yes
+  vars:
+    vm_path: "/var/lib/libvirt/images"
+  tasks:
+    - name: "Stop VM's"
+      command: "virsh destroy {{ item }}"
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: "Delete VM's"
+      command: "virsh undefine {{ item }}"
+      with_items: "{{ groups['masters'] }}, {{ groups['workers']}}"
+
+    - name: "Delete VM files"
+      file:
+        path: '{{ vm_path }}/{{ item }}'
+        state: absent
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+

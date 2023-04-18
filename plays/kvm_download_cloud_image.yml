@@ -1,0 +1,10 @@
+- name: 'Download Ubuntu cloud image'
+  hosts: kvmhost
+  become: yes
+  gather_facts: yes
+  tasks:
+    # Changed path for Ubuntu 22.04
+    - name: 'Download Ubuntu cloud image if it does not exist'
+      get_url:
+        url: 'https://cloud-images.ubuntu.com/releases/jammy/release/{{ cloud_image }}.img'
+        dest: '/var/lib/libvirt/images/base/{{ cloud_image }}.img'

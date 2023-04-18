@@ -1,0 +1,34 @@
+- name: 'Configure local workstation'
+  hosts: localhost
+  become: no
+  gather_facts: yes
+  tasks:
+    - name: 'Create ~/.kube'
+      file:
+        path: '{{ ansible_user_dir }}/.kube'
+        state: directory
+        owner: darrin
+        group: darrin
+        mode: 0700
+
+    - name: 'Distribute ~/.kube/config'
+      copy:
+        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+        dest: '{{ ansible_user_dir }}/.kube/config'
+
+    - name: 'Set permissions on ~/.kube/config'
+      file:
+        path: '{{ ansible_user_dir }}/.kube/config'
+        owner: darrin
+        group: darrin
+        mode: 0700
+
+#    - name: 'Delete local ~/.ssh/known_hosts file'
+#      file:
+#        state: absent
+#        path: "{{ ansible_user_dir }}/.ssh/known_hosts"
+
+    - name: 'Delete local temp file'
+      file:
+        state: absent
+        path: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}"

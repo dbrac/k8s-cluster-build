@@ -1,0 +1,59 @@
+# ansible-playbook -i inv/hosts.yaml plays/kvm_build_vmyaml
+- name: "Build VM's"
+  hosts: kvmhost
+  become: yes
+  gather_facts: yes
+  vars:
+    vm_path: "/var/lib/libvirt/images"
+  tasks:
+    - name: 'Create local directories for images'
+      file:
+        path: '{{ vm_path }}/{{ item }}'
+        state: directory
+#        owner:
+#        group:
+#        mode: 0700
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: 'Distribute network-config.yml'
+      template:
+        src: '../files/network-config.yml.j2'
+        dest: '{{ vm_path }}/{{ item }}/network-config.yml'
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: 'Distribute user-data.yml'
+      template:
+        src: '../files/user-data.yml.j2'
+        dest: '{{ vm_path }}/{{ item }}/user-data.yml'
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: 'Generate cidata.iso'
+      command: "cloud-localds -v --network-config={{ vm_path }}/{{ item }}/network-config.yml {{ vm_path }}/{{ item }}/{{ item }}-cidata.iso {{ vm_path }}/{{ item }}/user-data.yml"
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: "Create instance disk image"
+      command: "sudo qemu-img create -b {{ vm_path }}/base/{{ cloud_image }}.img -f qcow2 -F qcow2 {{ vm_path }}/{{ item }}/{{ item }}.qcow2"
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: "Resize instance disk image"
+      command: "sudo qemu-img resize {{ vm_path }}/{{ item }}/{{ item }}.qcow2 15G"
+      with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+
+    - name: "Create control plane nodes"
+      command: "virt-install --name={{ item }} --ram=4096 --vcpus=2 --import --disk path={{ vm_path }}/{{ item }}/{{ item }}.qcow2,format=qcow2 --disk path={{ vm_path }}/{{ item }}/{{ item }}-cidata.iso,device=cdrom --os-variant=ubuntu22.04 --network bridge=br0,model=virtio --noautoconsole"
+      with_items: "{{ groups['masters'] }}"
+
+    - name: "Create worker nodes"
+      command: "virt-install --name={{ item }} --ram=2048 --vcpus=2 --import --disk path={{ vm_path }}/{{ item }}/{{ item }}.qcow2,format=qcow2 --disk path={{ vm_path }}/{{ item }}/{{ item }}-cidata.iso,device=cdrom --os-variant=ubuntu22.04 --network bridge=br0,model=virtio --noautoconsole"
+      with_items: "{{ groups['workers'] }}"
+
+    - name: 'Wait for VMs to start'
+      wait_for_connection:
+        connect_timeout: 5
+        delay: 30   # Even though the VMs are available, they may not be ready yet so give them a chance to intialize
+        sleep: 15
+        timeout: 120
+
+    - name: 'Sleep to make sure VMs are available'
+      pause:
+        seconds: 15

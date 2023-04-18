@@ -1,0 +1,95 @@
+- name: 'Run init on primary master'
+  hosts: masters[0]
+  become: yes
+  tasks:
+    - name: 'Distribute kubeadm-config.yaml'
+      template:
+        src: '../files/kubeadm-config.yaml.j2'
+        dest: '~/kubeadm-config.yaml'
+
+    # NOTE: --upload-certs is only used when joining multiple masters, but doesn't hurt anything for single master
+    # NOTE: Need to review upload config (https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/#cmd-phase-upload-config)?
+    - name: 'kubeadm init (may take a few minutes to pull containers)'
+      command: 'kubeadm init --config ~/kubeadm-config.yaml  --upload-certs'
+
+    - name: 'Create ~/.kube'
+      file:
+        path: '~root/.kube'
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: 'Copy ~/.kube/config'
+      copy:
+        src: "/etc/kubernetes/admin.conf"
+        dest: '~root/.kube/config'
+        remote_src: yes
+
+    - name: 'Set permissions on ~/.kube/config'
+      file:
+        path: '~root/.kube/config'
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: Wait for all control-plane pods to be created
+      shell: "kubectl get pod --namespace=kube-system --selector tier=control-plane --output=jsonpath='{.items[*].metadata.name}'"
+      register: control_plane_pods_created
+      until: item in control_plane_pods_created.stdout
+      retries: 10
+      delay: 30
+      with_items:
+        - etcd
+        - kube-apiserver
+        - kube-controller-manager
+        - kube-scheduler
+
+    - name: Wait for control-plane pods to become ready
+      shell: "kubectl wait --namespace=kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=600s"
+      register: control_plane_pods_ready
+
+    - debug: var=control_plane_pods_ready.stdout_lines
+
+    - name: 'Generate temp directory'
+      command: mktemp -u
+      become: no
+      delegate_to: localhost
+      register: temp_file
+      run_once: yes
+      changed_when: False
+
+    - name: 'Retrieve admin.conf'
+      fetch:
+        src: '/etc/kubernetes/admin.conf'
+        dest: "{{ temp_file.stdout }}/admin.conf"
+        flat: yes
+      changed_when: False
+
+    # Generate certificate key for kube-system/kubeadm-certs secret. Even though
+    # a certificate key is generated during kubeadm init, it is not easily obtained
+    # to pass in the join command so new key is generated and uploaded.
+    - name: 'Generate certificate key'
+      command: 'kubeadm certs certificate-key'
+      register: cert_key
+
+    # Upload newly generated certificate key to kube-system/kubeadm-certs secret.
+    - name: 'Upload generated certificate key'
+      command: "kubeadm init phase upload-certs --upload-certs --certificate-key {{ cert_key.stdout }}"
+
+    - name: 'Generate bootstrap token and join command'
+      command: "kubeadm token create --description 'ansible cluster_build.yml' --ttl '30m' --print-join-command"
+      register: bootstrap_command
+      run_once: yes
+      changed_when: False
+
+    - name: "Store variables across plays"
+      add_host:
+        name: "K8S_VARIABLES"
+        admin_temp_path: "{{ temp_file.stdout }}"
+        join_command: "{{ bootstrap_command.stdout }}"
+        join_cert_key: "{{ cert_key.stdout }}"
+      changed_when: False
+
+    - debug: var=hostvars['K8S_VARIABLES']['join_command']
+    - debug: var=hostvars['K8S_VARIABLES']['join_cert_key']

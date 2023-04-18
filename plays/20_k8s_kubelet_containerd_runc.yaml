@@ -1,0 +1,137 @@
+- name: 'Prep cluster nodes'
+  hosts: masters:workers
+  become: yes
+  tasks:
+#    - name: 'Install required packages'
+#      apt:
+#        state: present
+#        install_recommends: no
+#        update_cache: no
+#        name:
+#          - apt-transport-https
+#          - ca-certificates
+#          - curl
+
+    - name: 'Add Kubernetes GPG key'
+      apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+    - name: 'Add Kubernetes repository'
+      apt_repository:
+        repo: deb [arch=amd64] http://apt.kubernetes.io/ kubernetes-xenial main
+        update_cache: no
+
+    - name: 'Apt-get update'
+      apt:
+        update_cache: yes
+      # Added because apt-get update kept failing
+      register: apt_update_cache
+      retries: 50
+      until: apt_update_cache is success or ('Failed to lock apt for exclusive operation' not in apt_update_cache.msg and 'Failed to update apt cache' not in apt_update_cache.msg)
+
+    - name: 'Install Kubernetes packages'
+      apt:
+        state: present
+        install_recommends: no
+        update_cache: no
+        name:
+          - kubeadm={{ kubernetes_package_version }}
+          - kubelet={{ kubernetes_package_version }}
+          - kubectl={{ kubernetes_package_version }}
+      register: apt_install
+      retries: 50
+      until: apt_install is success or ('Could not get lock' not in apt_install.msg and 'Unable to acquire the dpkg frontend lock' not in apt_install.msg)
+
+    # This block is stupid should be able to provide list of packages
+    - name: Mark hold kubeadm
+      dpkg_selections:
+        selection: hold
+        name: kubeadm
+
+    - name: Mark hold kubelet
+      dpkg_selections:
+        selection: hold
+        name: kubelet
+
+    - name: Mark hold kubectl
+      dpkg_selections:
+        selection: hold
+        name: kubectl
+
+    # TODO
+    # containerd and runc can be installed via apt-get
+    - name: 'Download/unzip containerd'
+      unarchive:
+        src: https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+        dest: /usr/
+        remote_src: yes
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: 'Download runc'
+      get_url:
+        url: https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64
+        dest: /usr/sbin/runc
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: 'Copy containerd.service'
+      copy:
+        src: '../files/containerd.service'
+        dest: '/lib/systemd/system/containerd.service'
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: 'Copy containerd.conf'
+      copy:
+        src: '../files/containerd.conf'
+        dest: '/etc/modules-load.d/containerd.conf'
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: 'Load the overlay module'
+      shell: modprobe overlay
+
+    - name: 'Load the br_netfilter module'
+      shell: modprobe br_netfilter
+
+    - name: 'Copy 99-kubernetes-cri.conf'
+      copy:
+        src: '../files/99-kubernetes-cri.conf'
+        dest: '/etc/sysctl.d/99-kubernetes-cri.conf'
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: 'Reload --system'
+      shell: sysctl --system
+
+    - name: 'Create /etc/containerd/'
+      file:
+        path: '/etc/containerd/'
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+
+    - name: 'Generate a containerd config'
+      shell: containerd config default > /etc/containerd/config.toml
+
+    # containerd by default has the option of 'SystemdCgroup = false' which worked for Ubuntu 20.04 but does not work for Ubuntu 22.04 - set it to true
+    - name: "Edit config.toml setting 'SystemdCgroup = true' for Ubuntu 22.04"
+      replace:
+        path: '/etc/containerd/config.toml'
+        regexp:  'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
+
+    - name: 'Enable containerd on startup'
+      command: 'systemctl enable containerd'
+
+    - name: 'Restart containerd to pick up changes'
+      systemd:
+        name: containerd
+        daemon_reload: yes
+        state: restarted

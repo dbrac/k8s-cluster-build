@@ -1,0 +1,14 @@
+#cloud-config
+########################################
+## Sets user name, password, and ssh key
+########################################
+hostname: {{ item }}
+users:
+  - name: darrin
+    plain_text_passwd: 'labpass1'
+    lock_passwd: false
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    ssh-authorized-keys:
+      - {{ ssh_public_key }}

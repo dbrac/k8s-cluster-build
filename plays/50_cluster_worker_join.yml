@@ -1,0 +1,40 @@
+- name: 'Join worker nodes'
+  hosts: workers
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: 'Create ~/.kube'
+      file:
+        path: '~root/.kube'
+        state: directory
+        owner: root
+        group: root
+        mode: 0700
+
+    - name: 'Distribute ~/.kube/config'
+      copy:
+        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+        dest: '~root/.kube/config'
+
+    - name: 'Set permissions on ~/.kube/config'
+      file:
+        path: '~root/.kube/config'
+        owner: root
+        group: root
+        mode: 0700
+
+# THIS WORKED FOR v1.23 BUT NOT v1.24 - NOT SURE WHY IT EVER WORKED SINCE CALICO NOT INSTALLED YET?
+#    - name: Wait for worker pods to become ready
+#      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-node,kube-proxy)" --timeout=60s
+#      register: worker_pods_ready
+#
+#    - debug: var=worker_pods_ready.stdout_lines
+
+#    - debug: var=hostvars['K8S_VARIABLES']['admin_temp_path']
+#    - debug: var=hostvars['K8S_VARIABLES']['join_command']
+
+    - name: 'kubeadm join'
+      command: "/usr/bin/{{ hostvars['K8S_VARIABLES']['join_command'] }}"
+
+    - name: 'Label worker nodes'
+      command: "kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker="
