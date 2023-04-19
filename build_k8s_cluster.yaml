@@ -1,10 +1,10 @@
 - import_playbook: plays/00_kvm_destroy_vm.yaml
 - import_playbook: plays/10_kvm_build_vm.yaml
-- import_playbook: plays/20_k8s_kubelet_containerd_runc.yaml
-- import_playbook: plays/30_cluster_master_init.yml
-# 40 join additional masters
-- import_playbook: plays/50_cluster_worker_join.yml
-- import_playbook: plays/60_cluster_install_calico.yml
-- import_playbook: plays/70_cluster_install_nginx.yml
-- import_playbook: plays/80_workstation_download_kubectl.yml
-- import_playbook: plays/90_workstation_configure.yml
+#- import_playbook: plays/20_k8s_kubelet_containerd_runc.yaml
+#- import_playbook: plays/30_cluster_master_init.yml
+## 40 join additional masters
+#- import_playbook: plays/50_cluster_worker_join.yml
+#- import_playbook: plays/60_cluster_install_calico.yml
+#- import_playbook: plays/70_cluster_install_nginx.yml
+#- import_playbook: plays/80_workstation_download_kubectl.yml
+#- import_playbook: plays/90_workstation_configure.yml

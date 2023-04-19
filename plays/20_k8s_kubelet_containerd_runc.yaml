@@ -28,6 +28,8 @@
       retries: 50
       until: apt_update_cache is success or ('Failed to lock apt for exclusive operation' not in apt_update_cache.msg and 'Failed to update apt cache' not in apt_update_cache.msg)
 
+    # We can also install containerd and runc via apt-get but I had issues with passing it a specific version.
+    # The
     - name: 'Install Kubernetes packages'
       apt:
         state: present
@@ -76,13 +78,13 @@
         group: root
         mode: 0755
 
-    - name: 'Copy containerd.service'
-      copy:
-        src: '../files/containerd.service'
-        dest: '/lib/systemd/system/containerd.service'
-        owner: root
-        group: root
-        mode: 0644
+#    - name: 'Copy containerd.service'
+#      copy:
+#        src: '../files/containerd.service'
+#        dest: '/lib/systemd/system/containerd.service'
+#        owner: root
+#        group: root
+#        mode: 0644
 
     - name: 'Copy containerd.conf'
       copy:
@@ -109,13 +111,13 @@
     - name: 'Reload --system'
       shell: sysctl --system
 
-    - name: 'Create /etc/containerd/'
-      file:
-        path: '/etc/containerd/'
-        state: directory
-        owner: root
-        group: root
-        mode: 0755
+#    - name: 'Create /etc/containerd/'
+#      file:
+#        path: '/etc/containerd/'
+#        state: directory
+#        owner: root
+#        group: root
+#        mode: 0755
 
     - name: 'Generate a containerd config'
       shell: containerd config default > /etc/containerd/config.toml
