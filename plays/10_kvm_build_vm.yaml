@@ -46,14 +46,3 @@
     - name: "Create worker nodes"
       command: "virt-install --name={{ item }} --ram=2048 --vcpus=2 --import --disk path={{ vm_path }}/{{ item }}/{{ item }}.qcow2,format=qcow2 --disk path={{ vm_path }}/{{ item }}/{{ item }}-cidata.iso,device=cdrom --os-variant=ubuntu22.04 --network bridge=br0,model=virtio --noautoconsole"
       with_items: "{{ groups['workers'] }}"
-
-    - name: 'Wait for VMs to start'
-      wait_for_connection:
-        connect_timeout: 5
-        delay: 30   # Even though the VMs are available, they may not be ready yet so give them a chance to intialize
-        sleep: 15
-        timeout: 120
-
-    - name: 'Sleep to make sure VMs are available'
-      pause:
-        seconds: 15

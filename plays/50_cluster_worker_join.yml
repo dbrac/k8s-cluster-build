@@ -2,6 +2,8 @@
   hosts: workers
   become: yes
   gather_facts: no
+  vars:
+    join_cmd: "{{ lookup('ansible.builtin.file', '../files/build_output/join_worker.txt') }}"
   tasks:
     - name: 'Create ~/.kube'
       file:
@@ -11,9 +13,14 @@
         group: root
         mode: 0700
 
+#    - name: 'Distribute ~/.kube/config'
+#      copy:
+#        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+#        dest: '~root/.kube/config'
+
     - name: 'Distribute ~/.kube/config'
       copy:
-        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+        src: "../files/build_output/admin.conf"
         dest: '~root/.kube/config'
 
     - name: 'Set permissions on ~/.kube/config'
@@ -34,7 +41,7 @@
 #    - debug: var=hostvars['K8S_VARIABLES']['join_command']
 
     - name: 'kubeadm join'
-      command: "/usr/bin/{{ hostvars['K8S_VARIABLES']['join_command'] }}"
+      command: "/usr/bin/{{ join_cmd }}"
 
     - name: 'Label worker nodes'
       command: "kubectl label node {{ inventory_hostname }} node-role.kubernetes.io/worker="

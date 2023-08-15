@@ -9,6 +9,8 @@
 
     # NOTE: --upload-certs is only used when joining multiple masters, but doesn't hurt anything for single master
     # NOTE: Need to review upload config (https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init-phase/#cmd-phase-upload-config)?
+    # use upload certs for mutli control plane. The secondary masters will use this
+    # use the config file for multi control plane. The secondary maters will read the primary control plane IP from here
     - name: 'kubeadm init (may take a few minutes to pull containers)'
       command: 'kubeadm init --config ~/kubeadm-config.yaml  --upload-certs'
 
@@ -51,20 +53,20 @@
 
     - debug: var=control_plane_pods_ready.stdout_lines
 
-    - name: 'Generate temp directory'
-      command: mktemp -u
-      become: no
-      delegate_to: localhost
-      register: temp_file
-      run_once: yes
-      changed_when: False
+#    - name: 'Generate temp directory'
+#      command: mktemp -u
+#      become: no
+#      delegate_to: localhost
+#      register: temp_file
+#      run_once: yes
+#      changed_when: False
 
-    - name: 'Retrieve admin.conf'
-      fetch:
-        src: '/etc/kubernetes/admin.conf'
-        dest: "{{ temp_file.stdout }}/admin.conf"
-        flat: yes
-      changed_when: False
+#    - name: 'Retrieve admin.conf'
+#      fetch:
+#        src: '/etc/kubernetes/admin.conf'
+#        dest: "{{ temp_file.stdout }}/admin.conf"
+#        flat: yes
+#      changed_when: False
 
     # Generate certificate key for kube-system/kubeadm-certs secret. Even though
     # a certificate key is generated during kubeadm init, it is not easily obtained
@@ -83,13 +85,53 @@
       run_once: yes
       changed_when: False
 
-    - name: "Store variables across plays"
-      add_host:
-        name: "K8S_VARIABLES"
-        admin_temp_path: "{{ temp_file.stdout }}"
-        join_command: "{{ bootstrap_command.stdout }}"
-        join_cert_key: "{{ cert_key.stdout }}"
-      changed_when: False
+# Let's write these vars a file instead so that we can stop and resume the playbook.
+#    - name: "Store variables across plays"
+#      add_host:
+#        name: "K8S_VARIABLES"
+#        admin_temp_path: "{{ temp_file.stdout }}"
+#        join_command: "{{ bootstrap_command.stdout }}"
+#        join_cert_key: "{{ cert_key.stdout }}"
+#      changed_when: False
 
-    - debug: var=hostvars['K8S_VARIABLES']['join_command']
-    - debug: var=hostvars['K8S_VARIABLES']['join_cert_key']
+#    - debug: var=hostvars['K8S_VARIABLES']['join_command']
+#    - debug: var=hostvars['K8S_VARIABLES']['join_cert_key']
+    - debug:
+        msg: "{{ bootstrap_command.stdout }}"
+
+    - debug:
+        msg: "{{cert_key.stdout}}"
+
+    - name: "Delete old join command files"
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - ../files/build_output/join_worker.txt
+        - ../files/bulid_output/join_controlplane.txt
+
+    - name: "Worker join command"
+      delegate_to: 127.0.0.1
+      copy:
+        owner: darrin
+        group: darrin
+        mode: 0744
+        dest: "../files/build_output/join_worker.txt"
+        content: |
+          {{ bootstrap_command.stdout }}
+
+    - name: "Control plane join command"
+      delegate_to: 127.0.0.1
+      copy:
+        owner: darrin
+        group: darrin
+        mode: 0744
+        dest: "../files/build_output/join_controlplane.txt"
+        content: |
+          {{ bootstrap_command.stdout }}" --control-plane --certificate-key "{{ cert_key.stdout }}
+
+    - name: 'Retrieve ~/.kube/config'
+      fetch:
+        flat: true
+        src: "/etc/kubernetes/admin.conf"
+        dest: "../files/build_output/admin.conf"

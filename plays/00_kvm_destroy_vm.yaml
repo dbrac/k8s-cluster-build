@@ -6,6 +6,7 @@
   vars:
     vm_path: "/var/lib/libvirt/images"
   tasks:
+    # TODO check if they exist first or get a list of what exists
     - name: "Stop VM's"
       command: "virsh destroy {{ item }}"
       with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"

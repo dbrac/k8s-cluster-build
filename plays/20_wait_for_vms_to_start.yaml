@@ -1,0 +1,11 @@
+- name: 'Wait for VMs to start'
+  hosts: masters:workers:loadbalancers
+  become: yes
+  gather_facts: no
+  tasks:
+    - name: 'Wait for VMs to start'
+      wait_for_connection:
+        connect_timeout: 5
+        delay: 30   # Even though the VMs are available, they may not be ready yet so give them a chance to intialize
+        sleep: 15
+        timeout: 120

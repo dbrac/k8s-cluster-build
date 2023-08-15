@@ -13,7 +13,8 @@
 
     - name: 'Distribute ~/.kube/config'
       copy:
-        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+#        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
+        src: '../files/build_output/admin.conf'
         dest: '{{ ansible_user_dir }}/.kube/config'
 
     - name: 'Set permissions on ~/.kube/config'
@@ -28,7 +29,7 @@
 #        state: absent
 #        path: "{{ ansible_user_dir }}/.ssh/known_hosts"
 
-    - name: 'Delete local temp file'
-      file:
-        state: absent
-        path: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}"
+#    - name: 'Delete local temp file'
+#      file:
+#        state: absent
+#        path: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}"
