@@ -1,4 +1,4 @@
-- name: 'Run init on primary master'
+- name: 'cluster master init'
   hosts: masters[0]
   become: yes
   tasks:
@@ -78,7 +78,7 @@
     # Upload newly generated certificate key to kube-system/kubeadm-certs secret.
     - name: 'Upload generated certificate key'
       command: "kubeadm init phase upload-certs --upload-certs --certificate-key {{ cert_key.stdout }}"
-
+#
     - name: 'Generate bootstrap token and join command'
       command: "kubeadm token create --description 'ansible cluster_build.yml' --ttl '30m' --print-join-command"
       register: bootstrap_command

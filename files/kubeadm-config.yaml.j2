@@ -1,15 +1,15 @@
 ###############################
 ## Master init configuration ##
 ###############################
-apiVersion: kubeadm.k8s.io/v1beta2
+apiVersion: kubeadm.k8s.io/v1beta3
 kind: InitConfiguration
 ---
-apiVersion: kubeadm.k8s.io/v1beta2
+apiVersion: kubeadm.k8s.io/v1beta3
 kind: ClusterConfiguration
 ######################################################
 ## Uses Kubernetes version from inv/group_vars/all.yml
 ######################################################
-kubernetesVersion: {{ kubernetes_version }}
+kubernetesVersion: v{{ kubernetes_version }}
 #############################################
 ## Uses apiserver from inv/group_vars/all.yml
 #############################################

@@ -9,7 +9,7 @@ kind: ClusterConfiguration
 ######################################################
 ## Uses Kubernetes version from inv/group_vars/all.yml
 ######################################################
-kubernetesVersion: {{ kubernetes_version }}
+kubernetesVersion: v{{ kubernetes_version }}
 #############################################
 ## Uses apiserver from inv/group_vars/all.yml
 #############################################

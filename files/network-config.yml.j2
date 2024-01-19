@@ -4,6 +4,6 @@ ethernets:
     dhcp4: false
     dhcp6: false
     addresses: [{{ hostvars[item]['ansible_host'] }}/24]
-    gateway4: 10.1.3.1
+    gateway4: 192.168.1.1
     nameservers:
       addresses: [8.8.8.8, 8.8.4.4] # google dns

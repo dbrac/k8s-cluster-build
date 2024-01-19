@@ -12,13 +12,45 @@
 #          - ca-certificates
 #          - curl
 
-    - name: 'Add Kubernetes GPG key'
-      apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+#    - name: 'Add Kubernetes GPG key'
+#      apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
+#
 
-    - name: 'Add Kubernetes repository'
-      apt_repository:
-        repo: deb [arch=amd64] http://apt.kubernetes.io/ kubernetes-xenial main
-        update_cache: no
+#    - name: 'Add Kubernetes repository'
+#      apt_repository:
+#        repo: deb [arch=amd64] http://apt.kubernetes.io/ kubernetes-xenial main
+#        update_cache: no
+
+    - name: 'download gpg key'
+      get_url:
+        url: 'https://pkgs.k8s.io/core:/stable:/v{{ repo_version }}/deb/Release.key'
+        owner: root
+        mode: 0644
+        dest: "/tmp/k8s.io.key"
+
+    - name: 'Dearmor GPG key'
+      shell: cat /tmp/k8s.io.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+#    - name: 'add apt gpg key'
+#      command: apt-key add /tmp/k8s.io.key
+
+    - name: 'add apt repo to sources.d'
+      copy:
+        dest: '/etc/apt/sources.list.d/kubernetes.list'
+        content: |
+          deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ repo_version }}/deb/ /
+
+#    - name: 'gpg key'
+#      command: curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ repo_version }}/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+#    - name: 'add k8s repo'
+#      command: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+
+#    - name: 'Add Kubernetes repository'
+#      apt_repository:
+#        repo: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ repo_version }}/deb/ /'
+#        update_cache: no
 
     - name: 'Apt-get update'
       apt:
@@ -31,6 +63,7 @@
     - name: "apt_update_cache.stdout"
       debug:
         msg: apt_update_cache.stdout
+
     - name: "apt_update_cache.msg"
       debug:
         msg: apt_update_cache.msg
@@ -43,9 +76,9 @@
         install_recommends: no
         update_cache: no
         name:
-          - kubeadm={{ kubernetes_package_version }}
-          - kubelet={{ kubernetes_package_version }}
-          - kubectl={{ kubernetes_package_version }}
+          - kubeadm={{ kubernetes_version }}-1.1
+          - kubelet={{ kubernetes_version }}-1.1
+          - kubectl={{ kubernetes_version }}-1.1
       register: apt_install
       retries: 50
       until: apt_install is success or ('Could not get lock' not in apt_install.msg and 'Unable to acquire the dpkg frontend lock' not in apt_install.msg)

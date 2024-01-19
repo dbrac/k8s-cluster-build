@@ -1,4 +1,4 @@
-- name: 'Install calico'
+- name: 'cluster install calico'
   hosts: masters[0]
   become: yes
   tasks:
@@ -43,7 +43,7 @@
         - calico-node
 
     - name: Wait for calico pods to become ready
-      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-kube-controllers,calico-node)" --timeout=120s
+      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-kube-controllers,calico-node)" --timeout=240s
       register: calico_pods_ready
 
     - debug: var=calico_pods_ready.stdout_lines

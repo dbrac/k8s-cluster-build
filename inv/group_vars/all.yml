@@ -1,25 +1,19 @@
-#calico_url: https://projectcalico.docs.tigera.io/manifests/calico.yaml #v3.23.1 OLD YAML WAS POINTING TO NEWEST VERSION RATHER THAN SPECIFIC VERSION
 calico_url: https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/calico.yaml
+nginx_url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
 cloud_image: ubuntu-22.04-server-cloudimg-amd64 #https://cloud-images.ubuntu.com/releases/
 containerd_version: 1.6.2
 runc_version: 1.1.0
-#kubernetes_packages: ['kubelet=1.24.8-00', 'kubeadm=1.24.8-00', '1.24.8-00']
-#kubernetes_package_version: 1.24.8-00
-#kubernetes_version: v1.24.8
-kubernetes_packages: ['kubelet=1.24.8-00', 'kubeadm=1.24.8-00', '1.24.8-00']
-kubernetes_package_version: 1.24.8-00
-kubernetes_version: v1.24.8
-#nginx_url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.0/deploy/static/provider/baremetal/deploy.yaml #(works with v1.24)
-nginx_url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.5.1/deploy/static/provider/baremetal/deploy.yaml
-
+repo_version: 1.26 # k8s repo we'll add which was recently changed to be version specific
+kubernetes_version: 1.26.13 # k8s package version we'll install
 pod_cidr: 10.244.0.0/16
 
 #############################################################################
 ## Uncomment for multi-master master - comment apiserver: 192.168.1.150 below
 #############################################################################
-apiserver: 10.1.3.4
+apiserver: 192.168.1.202
 ########################################################################################
 ## Uncomment for multi-master with loadbalancer - comment apiserver: 192.168.1.101 above
 ########################################################################################
 #apiserver: 192.168.1.150 #loadbalancer
-ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC51EwR+UT86IUXKQGTbHIhej4tdvWF6842TpKXhzHQOHFni8NEJ/o8Iw/XVc7LeOc1tF1n6viDDmB7yCaeC/kIDkyNXQrShAXGFslnDsMlQRiAETywIjRR2+2wY16q2Ohpt0eK6wTgpIAsPjHO3X/0XqUp6NCGYvbbb92zD1vtpZ3MCmvkRMGQiqD5TkhHM3h+jJFXLwkN38G7ScIPJCc8veFyROcLS6O6TdC5X8fbyqclRW+/czpJQ2eUgYA8iruE6JMlwY4hpXvdbDCVq9MjIRvMMe9W+PZc+R8Amg1J0SBK7eQqlLpKvwNS5mou7EPWQqKcdflZ3OhMruOFwjx9GsWsL78eb9iCJ4V9URqyBbzvKn5lopoAp15iXvEM9QYyvIc6vJVJJxZIC44a5sG2mbHkhKXuhTkrVO+tPesHeB5RzAQ9dnA7zSSihRDzFCo4+yQQcyHAmZseMfG45flilGVLe8awJgoMySugU9Z9NF332Im+yH66Z7IDjmo4MtE= darrin@matrix
+
+ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVyvgaKoaLfRQLV1+2/UUsuJSClgL/jwXfaB0Dyp12a+LODIBjoFQTE6Cg4rJh3mpDS4WLj8XdJiHMHQPjat6wbv9nS454vLDRAYF/L0yTrazE7XhckoebuKMvFKlp7b/+mZZzEX9xdlCMUdBDD4KuYMI7PjfWGzsN8jGnG9Lk+GRc+HXexfnnY90+fob+6g55nx6U4oiIRvFvbXCo0o4vwRHnxr/RurL08T2wKD8Vnhn2gneiz96i1sgfKGbhBjJwtNaYJSHqpzNE5/3IVVjrhSX3COfWXnMWaZ18ZWZJZF3S/gvtb2ETFvLjsGxjFGuHpTOSw9w+PG5K0CTW0P6Fk1c0Ph6eDboj1uhjIcEhoR8ToZMlkII/VqNE5yJQiX5BuuFuKcn+K2SNfAvmPimigOG1E6edWlA89+xzGqC77G1myakVbW8sXsnwOu/Dp13QJvOFTT78TT6n6tk6KCJOeG4rpLoPYGFmDJliLFILsYiCz+ywy9Hvz7AQsnt5Cqs= darrin@matrix

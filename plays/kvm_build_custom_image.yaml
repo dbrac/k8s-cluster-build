@@ -1,6 +1,6 @@
 # ansible-playbook -i inv/hosts.yaml plays/kvm_build_custom_image.yaml
 # it doesn't setup netplan, I already did that manually.
-- name: "Build Image"
+- name: "kvm build custom image"
   hosts: kvmhost
   become: yes
   gather_facts: yes

@@ -1,5 +1,5 @@
 # ansible-playbook -i inv/hosts.yaml plays/00_kvm_destroy_vm.yaml
-- name: "Build VM's"
+- name: "Destroy VM's"
   hosts: kvmhost
   become: yes
   gather_facts: yes

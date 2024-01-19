@@ -1,4 +1,4 @@
-- name: 'Configure local workstation'
+- name: 'configure localhost'
   hosts: localhost
   become: no
   gather_facts: yes
@@ -23,13 +23,3 @@
         owner: darrin
         group: darrin
         mode: 0700
-
-#    - name: 'Delete local ~/.ssh/known_hosts file'
-#      file:
-#        state: absent
-#        path: "{{ ansible_user_dir }}/.ssh/known_hosts"
-
-#    - name: 'Delete local temp file'
-#      file:
-#        state: absent
-#        path: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}"
