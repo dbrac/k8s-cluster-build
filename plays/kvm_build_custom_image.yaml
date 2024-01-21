@@ -1,12 +1,11 @@
 # ansible-playbook -i inv/hosts.yaml plays/kvm_build_custom_image.yaml
-# it doesn't setup netplan, I already did that manually.
 - name: "kvm build custom image"
   hosts: kvmhost
   become: yes
   gather_facts: yes
   remote_user: darrin
   vars:
-    iso_url: "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
+    iso_url: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
     iso_checksum: "file:https://cloud-images.ubuntu.com/releases/focal/release/SHA256SUMS"
     ubuntu_version: "20.04"
     image_filename: "ubuntu-{{ ubuntu_version }}-{{ ansible_date_time.date }}.qcow2"

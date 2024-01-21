@@ -4,8 +4,8 @@
 ########################################
 hostname: {{ item }}
 users:
-  - name: darrin
-    plain_text_passwd: 'labpass1'
+  - name: {{ ubuntu_user }}
+    plain_text_passwd: {{ ubuntu_pass }}
     lock_passwd: false
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']

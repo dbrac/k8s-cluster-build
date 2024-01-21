@@ -4,10 +4,6 @@
   tasks:
     # Calico latest version   > https://docs.projectcalico.org/manifests/calico.yaml
     # Calico specific version > https://docs.projectcalico.org/archive/v3.16/manifests/calico.yaml
-#    - name: 'Distribute Calico yaml'
-#      template:
-#        src: '../files/calico.yaml'
-#        dest: "~/calico.yaml"
 
     - name: 'Download calico'
       get_url:
@@ -43,7 +39,7 @@
         - calico-node
 
     - name: Wait for calico pods to become ready
-      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-kube-controllers,calico-node)" --timeout=240s
+      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-kube-controllers,calico-node)" --timeout=120s
       register: calico_pods_ready
 
     - debug: var=calico_pods_ready.stdout_lines

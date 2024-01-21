@@ -6,7 +6,7 @@
   gather_facts: no
   remote_user: darrin
   vars:
-    packages: ['qemu-kvm', 'libvirt-clients', 'libvirt-daemon-system', 'bridge-utils', 'virtinst', 'cloud-utils']
+    packages: ['qemu-kvm', 'libvirt-clients', 'libvirt-daemon-system', 'bridge-utils', 'virtinst', 'cloud-utils', 'packer']
   tasks:
     - name: "Install cpu-checker if its not already installed"
       apt:

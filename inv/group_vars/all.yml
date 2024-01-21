@@ -16,4 +16,6 @@ apiserver: 192.168.1.202
 ########################################################################################
 #apiserver: 192.168.1.150 #loadbalancer
 
+ubuntu_user: darrin
+ubuntu_pass: labpass1
 ssh_public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDVyvgaKoaLfRQLV1+2/UUsuJSClgL/jwXfaB0Dyp12a+LODIBjoFQTE6Cg4rJh3mpDS4WLj8XdJiHMHQPjat6wbv9nS454vLDRAYF/L0yTrazE7XhckoebuKMvFKlp7b/+mZZzEX9xdlCMUdBDD4KuYMI7PjfWGzsN8jGnG9Lk+GRc+HXexfnnY90+fob+6g55nx6U4oiIRvFvbXCo0o4vwRHnxr/RurL08T2wKD8Vnhn2gneiz96i1sgfKGbhBjJwtNaYJSHqpzNE5/3IVVjrhSX3COfWXnMWaZ18ZWZJZF3S/gvtb2ETFvLjsGxjFGuHpTOSw9w+PG5K0CTW0P6Fk1c0Ph6eDboj1uhjIcEhoR8ToZMlkII/VqNE5yJQiX5BuuFuKcn+K2SNfAvmPimigOG1E6edWlA89+xzGqC77G1myakVbW8sXsnwOu/Dp13QJvOFTT78TT6n6tk6KCJOeG4rpLoPYGFmDJliLFILsYiCz+ywy9Hvz7AQsnt5Cqs= darrin@matrix

@@ -8,6 +8,11 @@ variable "iso_checksum" {
   default = "file:https://cloud-images.ubuntu.com/releases/focal/release/SHA256SUMS"
 }
 
+variable "k8s_version" {
+    type    = string
+    default = "1.26.13-1.1"
+}
+
 source "qemu" "ubuntu_image" {
   iso_url           = "${var.iso_url}"
   iso_checksum      = "${var.iso_checksum}"
@@ -32,8 +37,12 @@ build {
 
   provisioner "shell" {
     inline = [
-      "sudo rm -rf /var/lib/cloud",
-      "sudo mkdir /etc/packerdir",
+      "sudo mkdir /etc/apt/keyrings/",
+      "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.26/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list",
+      "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.26/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg",
+      "sudo /usr/bin/apt-get update",
+      "sudo DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -y --quiet=2 install kubelet=${var.k8s_version} kubeadm=${var.k8s_version} kubectl=${var.k8s_version}",
+      "sudo apt-mark hold kubelet kubeadm kubectl"
     ]
     remote_folder="/tmp"
   }
