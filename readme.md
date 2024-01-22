@@ -42,9 +42,8 @@ cluster nodes. This works well because any platform where you can deploy an ubun
           nameservers:
             addresses: [8.8.8.8, 8.8.4.4]
     ```
-4. Run the following plays to set up the KVM server:
+4. Run the following play to set up the KVM server:
    - plays/kvm_host_setup.yaml -i inv/hosts.yaml
-   - plays/kvm_download_cloud_image.yaml -i inv/hosts.yaml
 
 
 5. If you didn't setup the KVM server describe above and are handling your own VM creation, then you need to commend the 

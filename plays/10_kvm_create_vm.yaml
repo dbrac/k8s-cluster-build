@@ -6,6 +6,17 @@
   vars:
     vm_path: "/var/lib/libvirt/images"
   tasks:
+    - name: ubuntu image file exists
+      stat:
+        path: /var/lib/libvirt/images/base/{{ cloud_image }}.img
+      register: file
+
+    - name: 'Download Ubuntu cloud image'
+      get_url:
+        url: 'https://cloud-images.ubuntu.com/releases/jammy/release/{{ cloud_image }}.img'
+        dest: '/var/lib/libvirt/images/base/{{ cloud_image }}.img'
+      when: not file.stat.exists
+
     - name: 'Create local directories for images'
       file:
         path: '{{ vm_path }}/{{ item }}'

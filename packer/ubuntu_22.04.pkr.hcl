@@ -1,17 +1,28 @@
 variable "iso_url" {
   type    = string
-  default = "https://cloud-images.ubuntu.com/releases/focal/release/ubuntu-20.04-server-cloudimg-amd64.img"
+  default = "https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64.img"
 }
 
 variable "iso_checksum" {
   type    = string
-  default = "file:https://cloud-images.ubuntu.com/releases/focal/release/SHA256SUMS"
+  default = "file:https://cloud-images.ubuntu.com/releases/jammy/release/SHA256SUMS"
 }
 
 variable "k8s_version" {
     type    = string
     default = "1.26.13-1.1"
 }
+
+variable "containerd_version" {
+    type    = string
+    default = "1.6.2"
+}
+
+variable "runc_version" {
+    type    = string
+    default = "1.1.0"
+}
+
 
 source "qemu" "ubuntu_image" {
   iso_url           = "${var.iso_url}"
@@ -37,7 +48,17 @@ build {
 
   provisioner "shell" {
     inline = [
-      "sudo mkdir /etc/apt/keyrings/",
+      "sudo curl -fsSL --output /tmp/containerd.tar.gz https://github.com/containerd/containerd/releases/download/v${var.containerd_version}/containerd-${var.containerd_version}-linux-amd64.tar.gz",
+      "sudo tar -zxvf /tmp/containerd.tar.gz -C /usr/",
+      "sudo rm -f /tmp/containerd.tar.gz",
+      "echo extracted containerd",
+      "sudo curl -fsSL --output /lib/systemd/system/containerd.service http://$${PACKER_HTTP_ADDR}/containerd/containerd.service",
+      "echo downloaded containerd service",
+      "sudo curl -fsSL --output /etc/modules-load.d/containerd.conf http://$${PACKER_HTTP_ADDR}/containerd/containerd.conf",
+      "echo downloaded conf",
+      "sudo curl -fsSL --output /usr/sbin/runc https://github.com/opencontainers/runc/releases/download/v${var.runc_version}/runc.amd64",
+      "echo downloaded runc",
+      "sudo mkdir -p /etc/apt/keyrings/",
       "echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.26/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list",
       "curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.26/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg",
       "sudo /usr/bin/apt-get update",

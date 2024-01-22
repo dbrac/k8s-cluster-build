@@ -1,6 +1,7 @@
 calico_url: https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/calico.yaml
 nginx_url: https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.5/deploy/static/provider/cloud/deploy.yaml
 cloud_image: ubuntu-22.04-server-cloudimg-amd64 #https://cloud-images.ubuntu.com/releases/
+ubuntu_version: 22.04
 containerd_version: 1.6.2
 runc_version: 1.1.0
 repo_version: 1.26 # k8s repo we'll add which was recently changed to be version specific

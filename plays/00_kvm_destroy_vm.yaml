@@ -6,14 +6,15 @@
   vars:
     vm_path: "/var/lib/libvirt/images"
   tasks:
-    # TODO check if they exist first or get a list of what exists
     - name: "Stop VM's"
       command: "virsh destroy {{ item }}"
       with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
+      ignore_errors: True
 
     - name: "Delete VM's"
       command: "virsh undefine {{ item }}"
       with_items: "{{ groups['masters'] }}, {{ groups['workers']}}"
+      ignore_errors: True
 
     - name: "Delete VM files"
       file:

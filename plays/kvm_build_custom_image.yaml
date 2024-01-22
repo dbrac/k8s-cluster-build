@@ -5,12 +5,16 @@
   gather_facts: yes
   remote_user: darrin
   vars:
-    iso_url: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
-    iso_checksum: "file:https://cloud-images.ubuntu.com/releases/focal/release/SHA256SUMS"
-    ubuntu_version: "20.04"
+    iso_url: "https://cloud-images.ubuntu.com/releases/22.04/release/{{ cloud_image }}.img"
+    iso_checksum: "file:https://cloud-images.ubuntu.com/releases/jammy/release/SHA256SUMS"
     image_filename: "ubuntu-{{ ubuntu_version }}-{{ ansible_date_time.date }}.qcow2"
     image_filepath: "/opt/vmbuild/packer/output-ubuntu_image"
   tasks:
+    - name: "delete vmbuild dir"
+      file:
+        state: absent
+        path: "/opt/vmbuild"
+
     - name: "Create build directory"
       file:
         path: "/opt/vmbuild"
@@ -29,6 +33,7 @@
         msg: "log file located at /tmp/packer-vmbuild.log"
       delegate_to: localhost
 
+# -var containerd_version="{{ containerd_version }}" -var runc_version="{{ runc_version }}"
     - name: "Build VM image"
       shell: PACKER_LOG=1 /usr/bin/packer build -var iso_url="{{ iso_url }}" -var iso_checksum={{ iso_checksum }} ubuntu_{{ ubuntu_version }}.pkr.hcl
       args:
@@ -37,3 +42,8 @@
 
     - name: "Rename and move image"
       shell: mv {{ image_filepath }}/packer-ubuntu_image /var/lib/libvirt/images/base/{{ image_filename }}
+
+    - name: "delete vm build dir"
+      file:
+        state: absent
+        path: "/opt/vmbuild"
