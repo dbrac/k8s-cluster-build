@@ -2,20 +2,10 @@
   hosts: masters:workers
   become: yes
   tasks:
-#    - name: 'Install required packages'
-#      apt:
-#        state: present
-#        install_recommends: no
-#        update_cache: no
-#        name:
-#          - apt-transport-https
-#          - ca-certificates
-#          - curl
-
+# OLD repo for reference
 #    - name: 'Add Kubernetes GPG key'
 #      apt_key: url=https://packages.cloud.google.com/apt/doc/apt-key.gpg
 #
-
 #    - name: 'Add Kubernetes repository'
 #      apt_repository:
 #        repo: deb [arch=amd64] http://apt.kubernetes.io/ kubernetes-xenial main
@@ -31,30 +21,16 @@
     - name: 'Dearmor GPG key'
       shell: cat /tmp/k8s.io.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
-#    - name: 'add apt gpg key'
-#      command: apt-key add /tmp/k8s.io.key
-
     - name: 'add apt repo to sources.d'
       copy:
         dest: '/etc/apt/sources.list.d/kubernetes.list'
         content: |
           deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v{{ repo_version }}/deb/ /
 
-#    - name: 'gpg key'
-#      command: curl -fsSL https://pkgs.k8s.io/core:/stable:/v{{ repo_version }}/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-
-#    - name: 'add k8s repo'
-#      command: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-
-
-#    - name: 'Add Kubernetes repository'
-#      apt_repository:
-#        repo: 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ repo_version }}/deb/ /'
-#        update_cache: no
-
     - name: 'Apt-get update'
       apt:
         update_cache: yes
+
       # Added because apt-get update kept failing
       register: apt_update_cache
       retries: 50
@@ -68,8 +44,6 @@
       debug:
         msg: apt_update_cache.msg
 
-    # We can also install containerd and runc via apt-get but I had issues with passing it a specific version.
-    # The
     - name: 'Install Kubernetes packages'
       apt:
         state: present
@@ -83,7 +57,6 @@
       retries: 50
       until: apt_install is success or ('Could not get lock' not in apt_install.msg and 'Unable to acquire the dpkg frontend lock' not in apt_install.msg)
 
-    # This block is stupid should be able to provide list of packages
     - name: Mark hold kubeadm
       dpkg_selections:
         selection: hold

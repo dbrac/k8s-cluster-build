@@ -13,11 +13,6 @@
         group: root
         mode: 0700
 
-#    - name: 'Distribute ~/.kube/config'
-#      copy:
-#        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
-#        dest: '~root/.kube/config'
-
     - name: 'Distribute ~/.kube/config'
       copy:
         src: "../files/build_output/admin.conf"
@@ -29,16 +24,6 @@
         owner: root
         group: root
         mode: 0700
-
-# THIS WORKED FOR v1.23 BUT NOT v1.24 - NOT SURE WHY IT EVER WORKED SINCE CALICO NOT INSTALLED YET?
-#    - name: Wait for worker pods to become ready
-#      shell: kubectl wait --namespace=kube-system --for=condition=Ready pods --selector="k8s-app in (calico-node,kube-proxy)" --timeout=60s
-#      register: worker_pods_ready
-#
-#    - debug: var=worker_pods_ready.stdout_lines
-
-#    - debug: var=hostvars['K8S_VARIABLES']['admin_temp_path']
-#    - debug: var=hostvars['K8S_VARIABLES']['join_command']
 
     - name: 'kubeadm join'
       command: "/usr/bin/{{ join_cmd }}"

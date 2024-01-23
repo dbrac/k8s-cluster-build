@@ -7,6 +7,8 @@ runc_version: 1.1.0
 repo_version: 1.26 # k8s repo we'll add which was recently changed to be version specific
 kubernetes_version: 1.26.13 # k8s package version we'll install
 pod_cidr: 10.244.0.0/16
+hosts_file: "/etc/hosts"
+update_hosts_file: True
 
 #############################################################################
 ## Uncomment for multi-master master - comment apiserver: 192.168.1.150 below

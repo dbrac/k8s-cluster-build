@@ -21,9 +21,6 @@
       file:
         path: '{{ vm_path }}/{{ item }}'
         state: directory
-#        owner:
-#        group:
-#        mode: 0700
       with_items: "{{ groups['masters'] }}, {{ groups['workers'] }}"
 
     - name: 'Distribute network-config.yml'

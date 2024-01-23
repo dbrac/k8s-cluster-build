@@ -12,9 +12,9 @@ as they need to be.
 
 ### Building a Custom Image
 
-Review the packer file [ubuntu_20.04.pkr.hcl](ubuntu_20.04.pkr.hcl). This is the template where you tell packer what to build. It uses
-HCL syntax which will look familiar if you've worked with other hashicorp solutions. I've included an example showing
-how to pull files from github and from your local repo.
+Review the packer file [ubuntu_20.04.pkr.hcl](ubuntu_20.04.pkr.hcl) which is an HCL template where add your scripts for packer to run. 
+It will look familiar if you've used other hashicorp solutions. I've included an example including how to pull files 
+from your local repo.
 
 Run the following play which requires that you have already set up a KVM  server and updated the inv/hosts.yaml file 
 with its IP address.

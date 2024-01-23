@@ -33,9 +33,9 @@
         msg: "log file located at /tmp/packer-vmbuild.log"
       delegate_to: localhost
 
-# -var containerd_version="{{ containerd_version }}" -var runc_version="{{ runc_version }}"
+# "
     - name: "Build VM image"
-      shell: PACKER_LOG=1 /usr/bin/packer build -var iso_url="{{ iso_url }}" -var iso_checksum={{ iso_checksum }} ubuntu_{{ ubuntu_version }}.pkr.hcl
+      shell: PACKER_LOG=1 /usr/bin/packer build -var iso_url="{{ iso_url }}" -var iso_checksum={{ iso_checksum }} -var containerd_version="{{ containerd_version }}" -var runc_version="{{ runc_version }}" ubuntu_{{ ubuntu_version }}.pkr.hcl
       args:
         chdir: "/opt/vmbuild/packer"
         creates: "{{ image_filepath }}"

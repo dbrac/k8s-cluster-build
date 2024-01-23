@@ -6,6 +6,6 @@
     - name: 'Wait for VMs to start'
       wait_for_connection:
         connect_timeout: 5
-        delay: 30   # Even though the VMs are available, they may not be ready yet so give them a chance to intialize
+        delay: 30
         sleep: 15
         timeout: 120

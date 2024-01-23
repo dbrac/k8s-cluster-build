@@ -2,9 +2,6 @@
   hosts: masters[0]
   become: yes
   tasks:
-    # Calico latest version   > https://docs.projectcalico.org/manifests/calico.yaml
-    # Calico specific version > https://docs.projectcalico.org/archive/v3.16/manifests/calico.yaml
-
     - name: 'Download calico'
       get_url:
         url: '{{ calico_url }}'

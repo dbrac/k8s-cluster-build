@@ -13,7 +13,6 @@
 
     - name: 'Distribute ~/.kube/config'
       copy:
-#        src: "{{ hostvars['K8S_VARIABLES']['admin_temp_path'] }}/admin.conf"
         src: '../files/build_output/admin.conf'
         dest: '{{ ansible_user_dir }}/.kube/config'
 
@@ -23,3 +22,15 @@
         owner: darrin
         group: darrin
         mode: 0700
+
+    - name: 'Download kubectl'
+      become: yes
+      get_url:
+        url: https://dl.k8s.io/release/v{{ kubernetes_version }}/bin/linux/amd64/kubectl
+        dest: '/usr/local/bin'
+        owner: root
+        group: root
+        mode: 0755
+
+
+

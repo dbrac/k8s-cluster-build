@@ -1,5 +1,5 @@
 # ansible-playbook -i inv/hosts.yaml plays/kvm_host_setup.yaml
-# it doesn't setup the network configuration or netplan, I already did that manually.
+# does not set up the required bridge network configuration (br0)
 - name: "kvm host setup"
   hosts: kvmhost
   become: yes
