@@ -10,6 +10,7 @@ be used to create the VM's. It is sometimes useful to use a custom image instead
 for an example of how to do this. Optionally, there are plays to build the VM's on KVM which are then used to become 
 cluster nodes. This works well because any platform where you can deploy an ubuntu server can be used to host this cluster.
 
+
 # Usage
 1. Update [all.yml](inv%2Fgroup_vars%2Fall.yml) with your ssh key, username, password and any version changes you may need to make.
    2. If you do not want to allow password logon, modify the cloud init file accordingly [user-data.yml.j2](files%2Fuser-data.yml.j2).
@@ -58,10 +59,36 @@ following plays in [build_k8s_cluster.yaml](build_k8s_cluster.yaml)
 
 
 6. The last play in the cluster build installs kubectl and admin.conf onto your localhost. Upon completion, you should
-be ready to start interacting with the cluster. Try the following:
+be ready to start interacting with the cluster. Try the following commands to verify.
    - kubectl version
    - kubectl get nodes
    - kubectl get pods -A
+
+8. Optional. If you want to use ingresses for your own applications then you need to set up name resolution to get your http traffic to nginx. The nginx service is configured as a nodeport service with "externalTrafficPolicy" set to "Cluster". This means you just need to get your http traffic (ports 80/443) to any cluster node where kube-proxy will forward it to nginx which will then forward to your backend service. A simple way to do that is to update your local hosts file to resolve the hosts specified in your ingress spec. For example:
+
+    Add this to your hosts file:
+    192.168.1.202 shortener.dblab.com
+
+    For an ingress that looks something like this:
+    ```
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+    name: url-shortener-ingress
+    spec:
+    ingressClassName: nginx
+    rules:
+      - host: shortener.dblab.com
+        http:
+          paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: url-shortener-svc
+                port:
+                  number: 80
+    ```
 
 # Documentation links
 Cloud init:
